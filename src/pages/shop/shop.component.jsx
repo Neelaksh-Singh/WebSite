@@ -1,43 +1,60 @@
 import React from 'react';
 import { Route } from 'react-router-dom';
-import {connect } from 'react-redux'
+import { connect } from 'react-redux';
+import { createStructuredSelector } from 'reselect';
+
+
+
+import { fetchCollectionsStartAsync } from '../../redux/shop/shop.actions';
+
+import WithSpinner from '../../components/with-spinner/with-spinner.components';
 
 import CollectionsOverview from '../../components/collections-overview/collections-overview.component';
 import CollectionPage from '../../components/collection/collection.component';
-import {updateCollections} from '../../redux/shop/shop.actions'
+import { selectIsCollectionFetching, selectIsCollectionsLoaded } from '../../redux/shop/shop.selectors';
 
-import {firestore , convertCollectionSnapshotToMap} from '../../firebase/firebase.utils'
+const CollectionsOverviewWithSpinner = WithSpinner(CollectionsOverview);
+const CollectionPageWithSpinner = WithSpinner(CollectionPage);
 
 class ShopPage extends React.Component {
-
-  unsubscribeFromSnapshot = null
-
   componentDidMount() {
+    const { fetchCollectionsStartAsync } = this.props;
 
-    const collectionRef  =  firestore.collection('collections')
-    const {updateCollections} = this.props
-
-    this.unsubscribeFromSnapshot = collectionRef.onSnapshot(async snapshot => {
-      const collectionsMap = convertCollectionSnapshotToMap(snapshot)
-      updateCollections(collectionsMap)
-    })
+    fetchCollectionsStartAsync();
   }
 
   render() {
-    const { match } = this.props
+    const { match , isCollectionsLoaded, isFetchingCollections } = this.props;
+    
     return (
-      
       <div className='shop-page'>
-        <Route exact path={`${match.path}`} component={CollectionsOverview} />
-        <Route path={`${match.path}/:collectionId`} component={CollectionPage} />
+        <Route
+          exact
+          path={`${match.path}`}
+          render={props => (
+            <CollectionsOverviewWithSpinner isLoading={isFetchingCollections} {...props} />
+          )}
+        />
+        <Route
+          path={`${match.path}/:collectionId`}
+          render={props => (
+            <CollectionPageWithSpinner isLoading={!isCollectionsLoaded} {...props} />
+          )}
+        />
       </div>
     );
   }
-  
-}  
+}
 
-const mapDispatchToProps = dispatch => ({
-  updateCollections: collectionsMap => dispatch(updateCollections(collectionsMap))
+const mapStateToProps  = createStructuredSelector({
+  isFetchingCollections: selectIsCollectionFetching,
+  isCollectionsLoaded: selectIsCollectionsLoaded
 })
 
-export default connect(null, mapDispatchToProps)(ShopPage);
+const mapDispatchToProps = dispatch => ({
+  fetchCollectionsStartAsync: () => dispatch(fetchCollectionsStartAsync())
+});
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(ShopPage);
