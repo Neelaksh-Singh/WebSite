@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { Route } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
@@ -16,16 +16,12 @@ import { selectIsCollectionFetching, selectIsCollectionsLoaded } from '../../red
 const CollectionsOverviewWithSpinner = WithSpinner(CollectionsOverview);
 const CollectionPageWithSpinner = WithSpinner(CollectionPage);
 
-class ShopPage extends React.Component {
-  componentDidMount() {
-    const { fetchCollectionsStart } = this.props;
+const ShopPage = ({ match , fetchCollectionsStart,isCollectionsLoaded, isFetchingCollections, }) => {
 
-    fetchCollectionsStart();
-  }
-
-  render() {
-    const { match , isCollectionsLoaded, isFetchingCollections } = this.props;
-    
+  useEffect(() => {
+    fetchCollectionsStart()
+  },[fetchCollectionsStart])
+  
     return (
       <div className='shop-page'>
         <Route
@@ -44,7 +40,7 @@ class ShopPage extends React.Component {
       </div>
     );
   }
-}
+
 
 const mapStateToProps  = createStructuredSelector({
   isFetchingCollections: selectIsCollectionFetching,
