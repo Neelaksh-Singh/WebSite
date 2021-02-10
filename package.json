@@ -2,8 +2,10 @@
     "name": "crwn-clothing",
     "version": "0.1.0",
     "private": true,
+    "proxy": "http://localhost:5000",
     "dependencies": {
         "@babel/runtime": "^7.12.5",
+        "axios": "^0.21.1",
         "firebase": "^8.2.1",
         "node-sass": "4.14.1",
         "react": "^16.8.6",
